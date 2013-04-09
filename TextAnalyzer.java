@@ -23,7 +23,8 @@ public class TextAnalyzer {
             // format the line of text
             String line = value.toString().toLowerCase();
             line = line.replaceAll("[^a-z]", "");
-            Text ouputKey = new Text("mContext " + "mQuery");
+            Text outputKey = new Text("mContext " + "mQuery");
+            IntWritable outputCount = new IntWritable(0);
             if(line.contains(mContext.toLowerCase())) {
                 // take into account that if the context equals the query,
                 // one of the counts needs to be discared
@@ -33,10 +34,7 @@ public class TextAnalyzer {
                         count++; 
                     }
                 }
-                outputCount = new IntWritable(count);
-            }
-            else {
-                outputCount = new IntWritable(0);
+                outputCount.set(count);
             }
             output.collect(outputKey, outputCount);
         }
@@ -67,7 +65,7 @@ public class TextAnalyzer {
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception  {
         JobConf conf = new JobConf(TextAnalyzer.class);
         conf.setJobName("textanalyzer");
 
@@ -82,8 +80,10 @@ public class TextAnalyzer {
         conf.setOutputFormat(TextOutputFormat.class);
 
         FileInputFormat.setInputPaths(conf, new Path(args[0]));
-        FileOutputFormat.setOutputFormat.setOutputPath(conf, new
+        FileOutputFormat.setOutputPath(conf, new
         Path(args[1]));
+
+        // TODO - take command line arguments for context & query
 
         JobClient.runJob(conf);
     }
