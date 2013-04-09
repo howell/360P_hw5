@@ -13,8 +13,14 @@ public class TextAnalyzer {
     public static class Map extends MapReduceBase implements
     Mapper<LongWritable, Text, Text, IntWritable> {
 
-        protected String mContext = "Darcy";
-        protected String mQuery = "money";
+        protected String mContext = "Jane";
+        protected String mQuery = "Elizabeth";
+
+        public void configure(JobConf job) {
+            // get the parameters
+            setContext(job.get("context"));
+            setQuery(job.get("query"));
+        }
     
         // key is in the format "[contextWord] [queryWord]"
         // value is the line of text
@@ -22,8 +28,8 @@ public class TextAnalyzer {
         IntWritable> output, Reporter reporter) throws IOException {
             // format the line of text
             String line = value.toString().toLowerCase();
-            line = line.replaceAll("[^a-z]", "");
-            Text outputKey = new Text("mContext " + "mQuery");
+            line = line.replaceAll("[^a-z]", " ");
+            Text outputKey = new Text(mContext  + " " + mQuery);
             IntWritable outputCount = new IntWritable(0);
             if(line.contains(mContext.toLowerCase())) {
                 // take into account that if the context equals the query,
@@ -33,6 +39,10 @@ public class TextAnalyzer {
                     if(w.equalsIgnoreCase(mQuery)) {
                         count++; 
                     }
+                }
+                if(count > 1) {
+//                    output.collect(new Text(line), 
+//                    new IntWritable(count));
                 }
                 outputCount.set(count);
             }
@@ -78,6 +88,9 @@ public class TextAnalyzer {
 
         conf.setInputFormat(TextInputFormat.class);
         conf.setOutputFormat(TextOutputFormat.class);
+
+        conf.set("context", args[2]);
+        conf.set("query", args[3]);
 
         FileInputFormat.setInputPaths(conf, new Path(args[0]));
         FileOutputFormat.setOutputPath(conf, new

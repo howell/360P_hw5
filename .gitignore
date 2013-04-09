@@ -3,3 +3,4 @@
 output/*
 gen/*
 .DS_Store
+*.jar
